@@ -1,7 +1,7 @@
 //****************************************************************
 
 // OSBSS PIR motion sensor datalogger - v0.01
-// Last edited on February 17, 2015
+// Last edited on March 12, 2015
 
 //****************************************************************
 
@@ -83,6 +83,8 @@ void loop()
   digitalWrite(POWER, HIGH);  // turn on SD card
   digitalWrite(RTCPOWER, HIGH);     // turn on RTC
   delay(1);    // give some delay to ensure SD card is turned on properly
+  
+  RTC.checkDST(); // check and account for Daylight Savings Time in US
   
   printToSD(); // print data to SD card
 }
