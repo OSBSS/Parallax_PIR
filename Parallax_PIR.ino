@@ -10,6 +10,9 @@
 #include <SdFat.h>
 #include <EEPROM.h>
 
+// Global objects and variables   ******************************
+char filename[15] = "log.csv";    // Filename. Format: "12345678.123". Cannot be more than 8 characters in length, contain spaces or start with a number
+
 PowerSaver chip; // declare object for PowerSaver class
 DS3234 RTC;      // declare object for DS3234 class
 SdFat sd;        // declare object for SdFat class
@@ -21,8 +24,7 @@ SdFile file;     // declare object for SdFile class
 int SDcsPin = 9;       // pin 9 is micrSD card breakout CS pin
 int state = 0;         // this variable stores the state of PIR sensor's output (either 1 or 0)
 
-char filename[15] = "log.csv";    // Filename. Format: "12345678.123". Cannot be more than 8 characters in length, contain spaces or start with a number
-
+// ISR ****************************************************************
 ISR(PCINT0_vect)  // Interrupt Service Routine for PCINT0 vector (pin 8)
 {
   asm("nop");  // do nothing
@@ -31,14 +33,16 @@ ISR(PCINT0_vect)  // Interrupt Service Routine for PCINT0 vector (pin 8)
 // Main code ****************************************************************
 void setup()
 {
-  Serial.begin(19200);
-  pinMode(POWER, OUTPUT);
+  Serial.begin(19200); // open serial at 19200 bps
+  
+  pinMode(POWER, OUTPUT); // set output pins
   pinMode(RTCPOWER, OUTPUT);
   pinMode(LED, OUTPUT);
   
   digitalWrite(POWER, HIGH);     // turn on SD card
   digitalWrite(RTCPOWER, HIGH);     // turn on RTC
   delay(1);                      // give some delay to ensure SD card is turned on properly
+  
   if(!sd.init(SPI_FULL_SPEED, SDcsPin))  // initialize SD card on the SPI bus
   {
     delay(10);
@@ -58,10 +62,9 @@ void setup()
                      // give some delay by blinking status LED to wait for the file to properly close
     digitalWrite(LED, HIGH);
     delay(10);
-    digitalWrite(LED, LOW);
-    delay(10);    
+    digitalWrite(LED, LOW); 
   }
-  chip.sleepInterruptSetup();  // set up sleep mode and interrupts
+  chip.sleepInterruptSetup();    // setup sleep function & pin change interrupts on the ATmega328p. Power-down mode is used here
 }
 
 void loop()
@@ -69,6 +72,7 @@ void loop()
   digitalWrite(POWER, LOW);  // turn off SD card
   digitalWrite(RTCPOWER, LOW);     // turn off RTC
   delay(1);
+  
   chip.turnOffADC();  // turn off ADC to save power
   chip.turnOffSPI();  // turn off SPI bus to save power
   //chip.turnOffWDT();  // turn off WatchDog timer. This doesn't work for Pro Mini (Rev 11); only works for Arduino Uno
@@ -79,6 +83,7 @@ void loop()
   // code will resume from here once the processor wakes up ============== //
   chip.turnOnADC();   // turn on ADC once the processor wakes up
   chip.turnOnSPI();   // turn on SPI bus once the processor wakes up
+  delay(1);    // important delay to ensure SPI bus is properly activated
   
   digitalWrite(POWER, HIGH);  // turn on SD card
   digitalWrite(RTCPOWER, HIGH);     // turn on RTC
@@ -134,7 +139,6 @@ void printToSD()
     digitalWrite(LED, HIGH);
     delay(10);
     digitalWrite(LED, LOW);
-    delay(10);  
   }
 }
 
