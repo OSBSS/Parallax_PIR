@@ -1,7 +1,7 @@
 //****************************************************************
 
 // OSBSS PIR motion sensor datalogger - v0.01
-// Last edited on March 12, 2015
+// Last edited on March 30, 2015
 
 //****************************************************************
 
@@ -43,7 +43,7 @@ void setup()
   digitalWrite(RTCPOWER, HIGH);     // turn on RTC
   delay(1);                      // give some delay to ensure SD card is turned on properly
   
-  if(!sd.init(SPI_FULL_SPEED, SDcsPin))  // initialize SD card on the SPI bus
+  if(!sd.begin(SDcsPin, SPI_FULL_SPEED))  // initialize SD card on the SPI bus
   {
     delay(10);
     SDcardError();
@@ -97,7 +97,7 @@ void loop()
 void printToSD()
 {
   pinMode(SDcsPin, OUTPUT);
-  if(!sd.init(SPI_FULL_SPEED, SDcsPin))    // very important - reinitialize SD card on the SPI bus
+  if(!sd.begin(SDcsPin, SPI_FULL_SPEED))    // very important - reinitialize SD card on the SPI bus
   {
     delay(10);
     SDcardError();
